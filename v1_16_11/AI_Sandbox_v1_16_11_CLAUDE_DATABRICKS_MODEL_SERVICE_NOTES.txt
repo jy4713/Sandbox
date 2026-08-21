@@ -1,0 +1,36 @@
+AI Sandbox v1.16.11 - Claude Databricks Model Service Update
+
+Baseline:
+- v1.16.11 Secure VI + ucode pipefail fix + Databricks workspace whitelist.
+
+Change:
+- Claude via Databricks now uses a Databricks-provided model service, matching Gemini routing.
+- Replaced DATABRICKS_CLAUDE_PROVIDER_SERVICE with DATABRICKS_CLAUDE_MODEL.
+- Default example: DATABRICKS_CLAUDE_MODEL=system.ai.claude-sonnet-4-5
+- ucode claude now injects --model "$DATABRICKS_CLAUDE_MODEL" instead of --provider.
+- DATABRICKS_GEMINI_MODEL behavior is unchanged.
+- Bare claude remains direct to Anthropic and bare gemini remains direct to Google.
+- Databricks PAT remains sourced from SSM /sandbox/databricks-token.
+- No new SSM parameter was added.
+
+Files updated:
+- .env.example
+- .devcontainer/scripts/run-with-ssm-secrets.sh
+- .devcontainer/scripts/sandbox-info.sh
+- .devcontainer/scripts/verify-runtime.sh
+- poc/docker-compose.yml
+- ecr/docker-compose.yml
+- scripts/ci/lint-package.sh
+- scripts/ci/lint-package.ps1
+- README.md / docs and developer templates where present
+
+Required runtime values:
+DATABRICKS_HOST=https://drax-dev-dataplatform.cloud.databricks.com
+DATABRICKS_CLAUDE_MODEL=system.ai.claude-sonnet-4-5
+DATABRICKS_GEMINI_MODEL=system.ai.gemini-3-1-flash-lite
+
+Expected routing:
+claude        -> Anthropic direct
+ gemini       -> Google direct
+ucode claude  -> Databricks model service system.ai.claude-sonnet-4-5
+ucode gemini  -> Databricks model service system.ai.gemini-3-1-flash-lite
