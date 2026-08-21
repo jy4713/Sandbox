@@ -1,0 +1,39 @@
+AI Secure Sandbox v1.16.10
+===========================
+Base: v1.16.9 latest package (SkipCisAssessment + CIS Windows-safe + direct AI + ucode Databricks routing + Tavily/Snyk runtime-state fixes).
+
+Changes in v1.16.10
+-------------------
+1. Snyk executable-cache fix
+   - Root cause: /tmp is intentionally mounted noexec; Snyk downloads a versioned native runtime to its cache and fork/execs it.
+   - Added dedicated ephemeral tmpfs: /run/ai-sandbox-snyk
+   - Mount options: rw,exec,nosuid,nodev,size=256m,mode=0700,uid=1000,gid=1000
+   - /tmp and /var/tmp remain noexec.
+   - Snyk HOME/XDG cache/config are created under the dedicated tmpfs per invocation and removed on exit.
+   - Applies to direct Snyk CLI and Snyk MCP because both use the same SSM runner profile.
+
+2. ucode headless PAT compatibility fix
+   - Root cause: reusing a hardened base also reused an older .build.env UCODE_GIT_REF, so the image could contain an old ucode commit without --use-pat.
+   - ReuseHardenedBase now refreshes only UCODE_GIT_REF from Databricks ucode main and pins it to the resolved immutable commit.
+   - Full hardened-base rebuild is NOT triggered by this refresh.
+   - Dockerfile fails the Admin image build unless the pinned ucode supports:
+       --profiles
+       --use-pat
+       --skip-validate
+       --skip-upgrade
+   - Runtime verification repeats the capability check.
+   - Interactive browser login is still fail-closed; the Sandbox uses the SSM Databricks PAT with a temporary .databrickscfg.
+
+3. Existing routing remains unchanged
+   claude       -> Anthropic direct, SSM /sandbox/claude-api-key
+   gemini       -> Google direct, SSM /sandbox/gemini-api-key
+   ucode claude -> Databricks, SSM /sandbox/databricks-token + DATABRICKS_CLAUDE_PROVIDER_SERVICE
+   ucode gemini -> Databricks, SSM /sandbox/databricks-token + DATABRICKS_GEMINI_MODEL
+   tvly         -> Tavily, SSM /sandbox/tavily-api-key
+   snyk         -> Snyk, SSM /sandbox/snyk-token
+
+Recommended fast POC build
+--------------------------
+pwsh -NoProfile -File .\scripts\admin\build-sandbox.ps1 -SandboxType POC -ReuseHardenedBase -SkipCisAssessment
+
+Important: Recreate the Developer container after loading the v1.16.10 image so the new Snyk tmpfs mount is applied.
