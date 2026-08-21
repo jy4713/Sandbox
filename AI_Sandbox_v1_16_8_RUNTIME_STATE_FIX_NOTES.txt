@@ -1,0 +1,38 @@
+AI Secure Sandbox v1.16.8 - Runtime State Fixes
+
+Baseline:
+- v1.16.7 latest Headless ucode PAT package
+- CIS Windows-safe Docker-volume extraction retained
+- Direct Claude/Gemini routing retained
+- Databricks model/provider routing retained
+
+Command routing:
+- claude -> Anthropic direct; SSM /sandbox/claude-api-key -> ANTHROPIC_API_KEY
+- gemini -> Google Gemini direct; SSM /sandbox/gemini-api-key -> GEMINI_API_KEY
+- ucode claude -> Databricks; SSM /sandbox/databricks-token; DATABRICKS_HOST; DATABRICKS_CLAUDE_PROVIDER_SERVICE
+- ucode gemini -> Databricks; SSM /sandbox/databricks-token; DATABRICKS_HOST; DATABRICKS_GEMINI_MODEL
+- tvly -> Tavily; SSM /sandbox/tavily-api-key; ephemeral writable HOME/config
+- snyk -> Snyk; SSM /sandbox/snyk-token; ephemeral writable HOME/XDG cache/config
+
+Read-only HOME fixes:
+- tvly no longer requires writable /home/vscode/.tavily/config.json
+- snyk no longer requires writable /home/vscode/.cache/snyk
+- temporary vendor runtime state is created under /tmp and deleted when the command exits
+
+Non-secret runtime settings required for Databricks-routed agents:
+- DATABRICKS_HOST
+- DATABRICKS_CLAUDE_PROVIDER_SERVICE
+- DATABRICKS_GEMINI_MODEL
+- AWS_REGION
+- SSM_PREFIX
+
+Optional:
+- SNYK_API
+- HIDDENLAYER_API_URL
+
+SSM SecureStrings:
+- /sandbox/claude-api-key
+- /sandbox/gemini-api-key
+- /sandbox/databricks-token
+- /sandbox/tavily-api-key
+- /sandbox/snyk-token
