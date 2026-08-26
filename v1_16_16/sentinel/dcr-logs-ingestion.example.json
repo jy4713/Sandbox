@@ -1,0 +1,40 @@
+{
+  "kind": "Direct",
+  "location": "<WORKSPACE_LOCATION>",
+  "properties": {
+    "streamDeclarations": {
+      "Custom-AISandboxHostLogs": {
+        "columns": [
+          {
+            "name": "Time",
+            "type": "datetime"
+          },
+          {
+            "name": "RawData",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "destinations": {
+      "logAnalytics": [
+        {
+          "workspaceResourceId": "<LOG_ANALYTICS_WORKSPACE_RESOURCE_ID>",
+          "name": "AISandboxWorkspace"
+        }
+      ]
+    },
+    "dataFlows": [
+      {
+        "streams": [
+          "Custom-AISandboxHostLogs"
+        ],
+        "destinations": [
+          "AISandboxWorkspace"
+        ],
+        "transformKql": "source | project TimeGenerated=todatetime(Time), RawData",
+        "outputStream": "Custom-AISandboxHostLogs_CL"
+      }
+    ]
+  }
+}

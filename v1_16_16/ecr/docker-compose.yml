@@ -1,0 +1,167 @@
+# =============================================================================
+# AI Secure Sandbox v1.16.16 - Production (ECR)
+# Host logging design:
+#   - No in-Sandbox monitoring sidecar is used.
+#   - DevContainer and Squid write directly to host-visible bind mounts.
+#   - Windows 365 can forward these files with AMA (Option 2) or a host-side
+#     Azure Monitor Logs Ingestion API sender (Option 3).
+# =============================================================================
+name: ai-secure-sandbox
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
+
+volumes:
+  ai-claude:
+  ai-gemini:
+  ai-gh:
+  ai-git-config:
+  ai-cache:
+  ai-local:
+  ai-npm:
+  ai-vscode:
+  ai-azure:
+  ai-gnupg:
+  ai-aws:
+
+services:
+  squid-proxy:
+    image: sandbox/approved-squid:current
+    pull_policy: never
+    networks: [internal, external]
+    volumes:
+      - type: bind
+        source: ${SANDBOX_LOG_ROOT:-./logs}/squid
+        target: /var/log/squid
+    tmpfs:
+      - /run:rw,nosuid,nodev,size=16m,mode=0755
+      - /var/spool/squid:rw,noexec,nosuid,nodev,size=64m,mode=0750
+    user: proxy
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ulimits:
+      core: 0
+    mem_limit: 512m
+    cpus: 0.5
+    pids_limit: 100
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "squidclient", "-h", "127.0.0.1", "-p", "3128", "mgr:info"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+
+  devcontainer:
+    image: sandbox/approved-devcontainer:current
+    pull_policy: never
+    networks: [internal]
+    hostname: ai-dev
+    user: "1000:1000"
+    environment:
+      HOME: "/home/vscode"
+      CLAUDE_CONFIG_DIR: "/home/vscode/.claude"
+      TZ: "Europe/London"
+      BASH_ENV: "/etc/sandbox-env.sh"
+      ENV: "/etc/sandbox-env.sh"
+      PYTHONUNBUFFERED: "1"
+      GIT_CONFIG_GLOBAL: "/home/vscode/.config/git/config"
+      GIT_TERMINAL_PROMPT: "0"
+      AWS_EC2_METADATA_DISABLED: "true"
+      SANDBOX_AWS_PROFILE: "${SANDBOX_AWS_PROFILE:-sandbox}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:-}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:-}"
+      AWS_SESSION_TOKEN: "${AWS_SESSION_TOKEN:-}"
+      AWS_SSO_SESSION: "${AWS_SSO_SESSION:-sandbox}"
+      AWS_SSO_START_URL: "${AWS_SSO_START_URL:-}"
+      AWS_SSO_REGION: "${AWS_SSO_REGION:-}"
+      AWS_SSO_ACCOUNT_ID: "${AWS_SSO_ACCOUNT_ID:-}"
+      AWS_SSO_ROLE_NAME: "${AWS_SSO_ROLE_NAME:-}"
+      # Stable AWS state anchor. AWS CLI v2 resolves the IAM Identity Center
+      # token cache from HOME, and ucode/Tavily/Snyk all run under short-lived
+      # HOME directories, so every AWS call is pinned to this path instead.
+      SANDBOX_AWS_HOME: "/home/vscode"
+      AWS_CONFIG_FILE: "/home/vscode/.aws/config"
+      AWS_SHARED_CREDENTIALS_FILE: "/home/vscode/.aws/credentials"
+      HTTP_PROXY: "http://squid-proxy:3128"
+      HTTPS_PROXY: "http://squid-proxy:3128"
+      http_proxy: "http://squid-proxy:3128"
+      https_proxy: "http://squid-proxy:3128"
+      NO_PROXY: "localhost,127.0.0.1,squid-proxy"
+      # Fallback consulted by MCP wrappers if an MCP client replaces rather
+      # than merges the child environment and drops HTTPS_PROXY.
+      SANDBOX_HTTPS_PROXY: "http://squid-proxy:3128"
+      no_proxy: "localhost,127.0.0.1,squid-proxy"
+      DATABRICKS_HOST: "${DATABRICKS_HOST:-}"
+      DATABRICKS_CLAUDE_MODEL: "${DATABRICKS_CLAUDE_MODEL:-}"
+      DATABRICKS_GEMINI_MODEL: "${DATABRICKS_GEMINI_MODEL:-}"
+      SSM_PREFIX: "${SSM_PREFIX:-/sandbox}"
+      AWS_REGION: "${AWS_REGION:-eu-west-2}"
+      DEVELOPER_ID: "${DEVELOPER_ID:-unknown}"
+      SANDBOX_AUDIT_REQUIRED: "${SANDBOX_AUDIT_REQUIRED:-true}"
+      SANDBOX_CONTENT_LOGGING: "${SANDBOX_CONTENT_LOGGING:-false}"
+      SNYK_API: "${SNYK_API:-}"
+      HIDDENLAYER_API_URL: "${HIDDENLAYER_API_URL:-}"
+      # Gemini CLI native local telemetry is written into the same host-exported
+      # audit directory. By default prompt/response content remains disabled.
+      # The runtime wrapper enables content telemetry only when
+      # SANDBOX_CONTENT_LOGGING=true.
+      GEMINI_TELEMETRY_ENABLED: "true"
+      GEMINI_TELEMETRY_TARGET: "local"
+      GEMINI_TELEMETRY_OUTFILE: "/var/log/sandbox/gemini-telemetry.log"
+      GEMINI_TELEMETRY_LOG_PROMPTS: "false"
+      SANDBOX_ENV: "production"
+    volumes:
+      - type: bind
+        source: ./workspace
+        target: /home/vscode/workspace
+        consistency: cached
+      - type: bind
+        source: ${SANDBOX_LOG_ROOT:-./logs}/devcontainer
+        target: /var/log/sandbox
+      - ai-claude:/home/vscode/.claude
+      - ai-gemini:/home/vscode/.gemini
+      - ai-gh:/home/vscode/.config/gh
+      - ai-git-config:/home/vscode/.config/git
+      - ai-cache:/home/vscode/.cache
+      - ai-local:/home/vscode/.local
+      - ai-npm:/home/vscode/.npm
+      - ai-vscode:/home/vscode/.vscode-server
+      - ai-azure:/home/vscode/.azure
+      - ai-gnupg:/home/vscode/.gnupg
+      - ai-aws:/home/vscode/.aws
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=512m,mode=1777
+      - /var/tmp:rw,noexec,nosuid,nodev,size=256m,mode=1777
+      - /run:rw,nosuid,nodev,size=64m,mode=0755
+      # Snyk CLI downloads/executes a versioned runtime binary from its cache.
+      # Keep that cache ephemeral and isolated, but intentionally executable.
+      - /run/ai-sandbox-snyk:rw,exec,nosuid,nodev,size=256m,mode=0700,uid=1000,gid=1000
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ulimits:
+      core: 0
+    mem_limit: 4g
+    cpus: 2.0
+    pids_limit: 512
+    sysctls:
+      net.ipv4.conf.all.accept_redirects: 0
+      net.ipv4.conf.all.secure_redirects: 0
+      net.ipv4.conf.all.accept_source_route: 0
+      net.ipv4.conf.all.log_martians: 1
+      net.ipv4.icmp_echo_ignore_broadcasts: 1
+      net.ipv4.icmp_ignore_bogus_error_responses: 1
+      net.ipv4.conf.all.rp_filter: 1
+      net.ipv4.tcp_syncookies: 1
+      net.ipv6.conf.all.disable_ipv6: 1
+      net.ipv6.conf.default.disable_ipv6: 1
+    restart: unless-stopped
+    depends_on:
+      squid-proxy:
+        condition: service_healthy

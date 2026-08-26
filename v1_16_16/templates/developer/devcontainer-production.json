@@ -1,0 +1,34 @@
+{
+  "name": "AI Secure Sandbox (Production ECR)",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/home/vscode/workspace",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": false,
+  "postCreateCommand": "post-create",
+  "forwardPorts": [3000, 5173, 8000, 8080],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "google.gemini-cli-vscode-ide-companion",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "files.eol": "\n",
+        "editor.formatOnSave": true,
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "git.autofetch": true
+      }
+    }
+  }
+}

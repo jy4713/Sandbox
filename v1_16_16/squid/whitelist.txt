@@ -1,0 +1,85 @@
+# =============================================================================
+# Squid Egress Whitelist — AI Secure Sandbox v1.16.16
+#
+# IMPORTANT — Squid dstdomain glob syntax:
+#   .domain.com  → matches domain.com AND all subdomains
+#   domain.com   → matches domain.com ONLY
+#   *.domain.com → INVALID in Squid dstdomain — use .domain.com instead
+#
+# [FIX] Squid refuses to start (FATAL, exits immediately) if the same acl
+# lists both a bare domain and a .dot-prefixed entry that already covers
+# it — e.g. "github.com" alongside ".github.com" is a fatal overlap, not
+# just a warning. Every entry below is checked for this by:
+#   scripts/ci/lint-package.sh / .ps1  → the package lint Squid whitelist overlap
+# Run that before rebuilding squid whenever you edit this file.
+#
+# To add Databricks: uncomment and replace <workspace-id> below,
+# then rebuild the squid image.
+# Changes require: docker build ./squid → re-export or re-push to ECR.
+# =============================================================================
+
+# ── LLM Gateway (Databricks) ──────────────────────────────────────────────────
+# Uncomment and set your actual workspace hostname before building.
+# Match the value in .env DATABRICKS_HOST.
+# adb-<workspace-id>.azuredatabricks.net
+drax-dev-dataplatform.cloud.databricks.com
+
+# ── AWS SSM + STS ─────────────────────────────────────────────────────────────
+ssm.eu-west-2.amazonaws.com
+sts.eu-west-2.amazonaws.com
+
+# ── AWS IAM Identity Center (SSO) ─────────────────────────────────────────────
+# Required because IMDS is disabled — SSO is the credential source.
+# Replace <sso-subdomain> with your organisation's Identity Center portal.
+# <sso-subdomain>.awsapps.com
+oidc.eu-west-2.amazonaws.com
+.sso.eu-west-2.amazonaws.com
+# [FIX] 'portal.sso.eu-west-2.amazonaws.com' removed — already covered by
+# '.sso.eu-west-2.amazonaws.com' above. Listing both is a fatal overlap.
+
+# ── Azure DevOps ──────────────────────────────────────────────────────────────
+.dev.azure.com
+# [FIX] 'dev.azure.com' removed — already covered by '.dev.azure.com' above.
+.visualstudio.com
+# [FIX] '.pkgs.visualstudio.com', 'marketplace.visualstudio.com', and
+# 'update.code.visualstudio.com' removed — all already covered by
+# '.visualstudio.com' above (it matches the apex AND every subdomain,
+# including multi-level ones like update.code.visualstudio.com).
+login.microsoftonline.com
+.artifacts.azure.com
+
+# ── Source control ────────────────────────────────────────────────────────────
+.github.com
+# [FIX] 'github.com' removed — already covered by '.github.com' above.
+.githubusercontent.com
+
+# ── Package registries ────────────────────────────────────────────────────────
+registry.npmjs.org
+pypi.org
+files.pythonhosted.org
+
+# ── VS Code extensions marketplace ───────────────────────────────────────────
+# marketplace.visualstudio.com, update.code.visualstudio.com are covered by
+# .visualstudio.com above — see the Azure DevOps section note.
+.gallerycdn.vsassets.io
+.vscode-cdn.net
+
+# ── OS security updates ───────────────────────────────────────────────────────
+security.ubuntu.com
+archive.ubuntu.com
+
+# ── Approved AI/security services ─────────────────────────────────────────────
+# Direct official AI provider endpoints. Bare `claude` and `gemini` use these;
+# `ucode claude` / `ucode gemini` use the Databricks workspace endpoint above.
+api.anthropic.com
+generativelanguage.googleapis.com
+
+# APPLICATION MAINTENANCE ZONE - APPROVED SERVICE DOMAINS
+# Add only security-approved domains required by installed applications. Run the
+# package lint after every edit to detect overlapping Squid dstdomain entries.
+.tavily.com
+.snyk.io
+.hiddenlayer.com
+
+# ── BLOCKED (absent = blocked by default-deny) ────────────────────────────────
+# 169.254.169.254            — IMDS: bypasses Squid via NO_PROXY

@@ -1,0 +1,45 @@
+// Microsoft Sentinel examples for AISandboxHostLogs_CL (TimeGenerated, RawData)
+
+// Suspicious sandbox commands
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(1h)
+| where RawData has_any ("sudo_attempt", "suspicious_cmd", "curl", "wget", " ncat ", " nc ")
+| order by TimeGenerated desc
+
+// Direct LLM provider bypass attempts
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(1h)
+| where RawData has "EGRESS_ATTEMPT"
+| where RawData has_any ("api.anthropic.com", "generativelanguage.googleapis.com", "api.openai.com")
+| order by TimeGenerated desc
+
+// Squid denials
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(1h)
+| where RawData has_any ("TCP_DENIED", "DENIED")
+| summarize deny_count=count(), samples=make_set(RawData, 10) by bin(TimeGenerated, 15m)
+| where deny_count >= 3
+
+// Activity summary
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(24h)
+| summarize total_lines=count(), shell_commands=countif(RawData has "SHELL_CMD"), git_ops=countif(RawData has "GIT_OP"), security_events=countif(RawData has "SECURITY") by bin(TimeGenerated, 1h)
+
+// SSM-backed application activity summary (v1.16.16 JSON Lines)
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(24h)
+| extend evt = parse_json(RawData)
+| where tostring(evt.source) == "ai-sandbox-application-audit"
+| summarize events=count(), failures=countif(tostring(evt.status) == "failure"), users=dcount(tostring(evt.developer_id))
+    by app=tostring(evt.app), operation=tostring(evt.operation), bin(TimeGenerated, 1h)
+| order by TimeGenerated desc
+
+// Failed Databricks / Tavily / Snyk / ADO / HiddenLayer operations
+AISandboxHostLogs_CL
+| where TimeGenerated > ago(1h)
+| extend evt = parse_json(RawData)
+| where tostring(evt.source) == "ai-sandbox-application-audit"
+| where tostring(evt.status) == "failure"
+| where tostring(evt.app) in ("databricks", "tavily", "snyk", "ado", "hiddenlayer", "mcp")
+| project TimeGenerated, app=tostring(evt.app), operation=tostring(evt.operation), developer=tostring(evt.developer_id), exit_code=toint(evt.exit_code), duration_ms=tolong(evt.duration_ms)
+| order by TimeGenerated desc

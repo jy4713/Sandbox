@@ -1,0 +1,50 @@
+{
+  "configurationFileVersion": 2,
+  "enhancedContainerIsolation": {
+    "locked": true,
+    "value": true
+  },
+  "blockDockerLoad": {
+    "locked": true,
+    "value": true
+  },
+  "exposeDockerAPIOnTCP2375": {
+    "locked": true,
+    "value": false
+  },
+  "extensionsEnabled": {
+    "locked": true,
+    "value": false
+  },
+  "desktopTerminalEnabled": {
+    "locked": true,
+    "value": false
+  },
+  "enableInference": {
+    "locked": true,
+    "value": false
+  },
+  "enableInferenceTCP": {
+    "locked": true,
+    "value": false
+  },
+  "allowBetaFeatures": {
+    "locked": true,
+    "value": false
+  },
+  "enableDockerMCPToolkit": {
+    "locked": true,
+    "value": false
+  },
+  "kubernetes": {
+    "locked": true,
+    "enabled": false,
+    "showSystemContainers": false
+  },
+  "filesharingAllowedDirectories": [
+    {
+      "path": "C:\\ai-sandbox",
+      "sharedByDefault": true
+    }
+  ]
+}

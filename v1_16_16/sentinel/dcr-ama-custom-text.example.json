@@ -1,0 +1,58 @@
+{
+  "type": "Microsoft.Insights/dataCollectionRules",
+  "name": "<DCR_NAME>",
+  "location": "<WORKSPACE_LOCATION>",
+  "apiVersion": "2022-06-01",
+  "properties": {
+    "streamDeclarations": {
+      "Custom-Text-AISandboxHostLogs_CL": {
+        "columns": [
+          {
+            "name": "TimeGenerated",
+            "type": "datetime"
+          },
+          {
+            "name": "RawData",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "dataSources": {
+      "logFiles": [
+        {
+          "streams": [
+            "Custom-Text-AISandboxHostLogs_CL"
+          ],
+          "filePatterns": [
+            "C:\\ProgramData\\AI-Sandbox\\Logs\\devcontainer\\*.log",
+            "C:\\ProgramData\\AI-Sandbox\\Logs\\squid\\*.log"
+          ],
+          "format": "text",
+          "name": "Custom-Text-AISandboxHostLogs_CL"
+        }
+      ]
+    },
+    "destinations": {
+      "logAnalytics": [
+        {
+          "workspaceResourceId": "<LOG_ANALYTICS_WORKSPACE_RESOURCE_ID>",
+          "workspaceId": "<LOG_ANALYTICS_WORKSPACE_ID>",
+          "name": "AISandboxWorkspace"
+        }
+      ]
+    },
+    "dataFlows": [
+      {
+        "streams": [
+          "Custom-Text-AISandboxHostLogs_CL"
+        ],
+        "destinations": [
+          "AISandboxWorkspace"
+        ],
+        "transformKql": "source",
+        "outputStream": "Custom-AISandboxHostLogs_CL"
+      }
+    ]
+  }
+}
