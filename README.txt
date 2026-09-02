@@ -55,4 +55,9 @@ region=eu-north-1
 output=json
 
 
- 
+  
+asdfsadgasdASDFASDFAJUAKIA6PVIWJSRZNERXUNOJUasdlkfjalsdf
+
+
+Secret Access Key: *alksdja7hhdJUv+SJ1QYG2KbdosYUcZAQhv/OX+2zmWpj6zrVf5ZbJUasdlaosdhfaosdfds8a
+
