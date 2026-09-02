@@ -19,6 +19,12 @@ RUN rm -rf /tmp/ucode-test \
 
 
 
+Set-Content -Path .\Dockerfile.git-test -Value $dockerfile -Encoding Ascii
+Get-Content .\Dockerfile.git-test
+
+
+
+
 
 
 
