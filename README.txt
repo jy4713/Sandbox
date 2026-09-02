@@ -31,3 +31,28 @@ ENV GIT_ASKPASS=echo
 
 # 변경
 && git -c credential.helper='' clone https://github.com/databricks/ucode /tmp/ucode-src \
+
+007c146d-3d97-467d-849f-6f4fe5a6a0f3
+
+
+일단 확인하려고
+
+네, 테스트 목적이면:
+
+C:\Users\<username>\.aws\credentials
+
+ini
+[sandbox]
+aws_access_key_id=AKIA...
+aws_secret_access_key=...
+aws_session_token=...
+
+C:\Users\<username>\.aws\config
+
+ini
+[profile sandbox]
+region=eu-north-1
+output=json
+
+
+ 
