@@ -20,3 +20,7 @@ Write-Host "EnvFile will be: $EnvFile_sim"
 
 # Docker 컨테이너에서 github.com 접근 테스트
 docker run --rm ubuntu:24.04 bash -c "apt-get update -qq && apt-get install -y -qq curl && curl -v https://github.com" 2>&1 | tail -20
+
+
+ENV GIT_TERMINAL_PROMPT=0
+ENV GIT_ASKPASS=echo
