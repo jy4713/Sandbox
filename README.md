@@ -7,3 +7,12 @@ dockerfile
 && git -C /tmp/ucode-src checkout "${UCODE_GIT_REF}" \
 && uv tool install --python /usr/bin/python3 /tmp/ucode-src \
 && rm -rf /tmp/ucode-src \
+
+
+
+# 스크립트 실행 전에 이것만 실행
+$scriptPath = "C:\Temp\AI_Sandbox_Admin\scripts\supply-chain\resolve-tool-artifacts.ps1"
+$PSScriptRoot_sim = Split-Path $scriptPath
+$Root_sim = Split-Path -Parent (Split-Path -Parent $PSScriptRoot_sim)
+$EnvFile_sim = Join-Path $Root_sim '.build.env'
+Write-Host "EnvFile will be: $EnvFile_sim"
