@@ -59,3 +59,6 @@ timeout 20s /usr/local/libexec/ai-sandbox/real/mcp-remote \
   http://127.0.0.1:8771/databricks/sql-mcp \
   --enable-proxy \
   --transport http-only
+
+
+  docker exec -u 0 ai-secure-sandbox-devcontainer-1 sh -c "install -d -m 700 -o 1000 -g 1000 /home/vscode/.mcp-auth"
