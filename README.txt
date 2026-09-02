@@ -24,3 +24,10 @@ docker run --rm ubuntu:24.04 bash -c "apt-get update -qq && apt-get install -y -
 
 ENV GIT_TERMINAL_PROMPT=0
 ENV GIT_ASKPASS=echo
+
+
+# 기존
+&& git clone https://github.com/databricks/ucode /tmp/ucode-src \
+
+# 변경
+&& git -c credential.helper='' clone https://github.com/databricks/ucode /tmp/ucode-src \
