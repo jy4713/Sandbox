@@ -20,3 +20,7 @@ Get-Content .\Dockerfile.git-test | ForEach-Object {
     $i++
     "{0,2}: {1}" -f $i, $_
 }
+
+
+
+docker build --no-cache --progress=plain -f .\Dockerfile.git-test .
