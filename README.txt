@@ -16,3 +16,7 @@ $PSScriptRoot_sim = Split-Path $scriptPath
 $Root_sim = Split-Path -Parent (Split-Path -Parent $PSScriptRoot_sim)
 $EnvFile_sim = Join-Path $Root_sim '.build.env'
 Write-Host "EnvFile will be: $EnvFile_sim"
+
+
+# Docker 컨테이너에서 github.com 접근 테스트
+docker run --rm ubuntu:24.04 bash -c "apt-get update -qq && apt-get install -y -qq curl && curl -v https://github.com" 2>&1 | tail -20
