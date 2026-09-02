@@ -13,3 +13,10 @@ $lines = @(
 )
 
 Set-Content -Path .\Dockerfile.git-test -Value $lines -Encoding ASCII
+
+
+$i = 0
+Get-Content .\Dockerfile.git-test | ForEach-Object {
+    $i++
+    "{0,2}: {1}" -f $i, $_
+}
