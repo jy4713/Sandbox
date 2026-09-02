@@ -55,3 +55,7 @@ region=eu-north-1
 output=json
 
  
+timeout 20s /usr/local/libexec/ai-sandbox/real/mcp-remote \
+  http://127.0.0.1:8771/databricks/sql-mcp \
+  --enable-proxy \
+  --transport http-only
