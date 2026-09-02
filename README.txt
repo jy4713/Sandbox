@@ -62,3 +62,6 @@ timeout 20s /usr/local/libexec/ai-sandbox/real/mcp-remote \
 
 
   docker exec -u 0 ai-secure-sandbox-devcontainer-1 sh -c "install -d -m 700 -o 1000 -g 1000 /home/vscode/.mcp-auth"
+
+
+  docker exec -u 1000:1000 ai-secure-sandbox-devcontainer-1 sh -c "mkdir -p /home/vscode/.mcp-auth && chmod 700 /home/vscode/.mcp-auth"
