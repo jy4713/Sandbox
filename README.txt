@@ -65,3 +65,15 @@ timeout 20s /usr/local/libexec/ai-sandbox/real/mcp-remote \
 
 
   docker exec -u 1000:1000 ai-secure-sandbox-devcontainer-1 sh -c "mkdir -p /home/vscode/.mcp-auth && chmod 700 /home/vscode/.mcp-auth"
+
+
+
+
+
+
+asdfasdfasdfasdfasdfazure_tenant_id=007c146d-3d97-467d-849f-6f4fe5a6a0f3
+asdfasdfasdfasdfasdfazure_app_id_uri=5179f44d-7939-4cf7-b84c-23119d919c8c
+asdfasdfasdfasdfasdfasdfasdfasdfasdfazure_default_username=your email
+sadfasdfasdfasdfasdfasdfazure_default_role_arn=arn:aws:iam :: 615991391131:role/ta_aws_ro_role
+asdfasdfasdfasdfasdfasdfazure_default_duration_hours=1
+asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfazure_default_remember_me=true
