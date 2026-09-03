@@ -121,3 +121,21 @@ PY
 
 git -c credential.helper= ls-remote \
 'https://dev.azure.com/DraxTechnology/Generative%20AI%20Programme/_git/Drax.PoC.CodeAssistance'
+
+
+
+
+
+python3 - <<'PY'
+import os
+import urllib.request
+
+for k in [
+    "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY",
+    "http_proxy", "https_proxy", "no_proxy"
+]:
+    print(f"{k}={os.environ.get(k)}")
+
+print("\nurllib proxies:")
+print(urllib.request.getproxies())
+PY
