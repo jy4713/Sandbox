@@ -139,3 +139,26 @@ for k in [
 print("\nurllib proxies:")
 print(urllib.request.getproxies())
 PY
+
+\
+
+
+
+
+python3 - <<'PY'
+import socket
+
+s = socket.create_connection(("squid-proxy", 3128), timeout=5)
+
+s.sendall(
+    b"CONNECT dev.azure.com:443 HTTP/1.1\r\n"
+    b"Host: dev.azure.com:443\r\n"
+    b"Connection: close\r\n"
+    b"\r\n"
+)
+
+data = s.recv(4096)
+print(data.decode(errors="replace"))
+
+s.close()
+PY
