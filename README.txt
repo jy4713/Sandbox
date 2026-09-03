@@ -73,3 +73,31 @@ timeout 20s /usr/local/libexec/ai-sandbox/real/mcp-remote \
 https://dev.azure.com/DraxTechnology/Generative%20AI%20Programme/_git/Drax.PoC.CodeAssistance/branches
 
 feature/todo-app-scaffold
+
+
+
+
+python3 - <<'PY'
+import socket
+
+try:
+    s = socket.create_connection(("127.0.0.1", 8771), timeout=3)
+    s.sendall(
+        b"GET /healthz HTTP/1.1\r\n"
+        b"Host: 127.0.0.1\r\n"
+        b"Connection: close\r\n\r\n"
+    )
+
+    data = b""
+    while True:
+        x = s.recv(4096)
+        if not x:
+            break
+        data += x
+
+    print(data.decode(errors="replace"))
+    s.close()
+
+except Exception as e:
+    print("FAILED:", repr(e))
+PY
