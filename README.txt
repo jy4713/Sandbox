@@ -270,4 +270,142 @@ for w in warehouses:
         "| State:", w.get("state")
     )
 PY
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pip install databricks-sql-connector databricks-sdk
+
+from databricks import sql
+from databricks.sdk.core import Config, oauth_service_principal
+from getpass import getpass
+import re
+
+
+def normalize_hostname(value: str) -> str:
+    value = value.strip().rstrip("/")
+
+    if value.startswith("https://"):
+        value = value[len("https://"):]
+    elif value.startswith("http://"):
+        value = value[len("http://"):]
+
+    return value
+
+
+def validate_table_name(table_name: str) -> str:
+    """
+    Accept:
+      table
+      schema.table
+      catalog.schema.table
+
+    Simple identifiers only for safety.
+    """
+    pattern = r"^[A-Za-z_][A-Za-z0-9_$]*(\.[A-Za-z_][A-Za-z0-9_$]*){0,2}$"
+
+    if not re.fullmatch(pattern, table_name):
+        raise ValueError(
+            "Invalid table name. Use table, schema.table, "
+            "or catalog.schema.table format."
+        )
+
+    # Quote every identifier independently.
+    return ".".join(f"`{part}`" for part in table_name.split("."))
+
+
+# ---------------------------------------------------------
+# Input
+# ---------------------------------------------------------
+
+server_hostname = normalize_hostname(
+    input(
+        "Databricks Server Hostname "
+        "(e.g. drax-dev-dataplatform.cloud.databricks.com): "
+    )
+)
+
+http_path = input(
+    "SQL Warehouse HTTP Path "
+    "(e.g. /sql/1.0/warehouses/xxxxxxxxxxxxxxxx): "
+).strip()
+
+client_id = input(
+    "Service Principal Client ID: "
+).strip()
+
+client_secret = getpass(
+    "Service Principal OAuth Secret: "
+)
+
+table_name = input(
+    "Table name (catalog.schema.table): "
+).strip()
+
+safe_table_name = validate_table_name(table_name)
+
+
+# ---------------------------------------------------------
+# OAuth M2M credential provider
+# ---------------------------------------------------------
+
+def credential_provider():
+    config = Config(
+        host=f"https://{server_hostname}",
+        client_id=client_id,
+        client_secret=client_secret,
+    )
+
+    return oauth_service_principal(config)
+
+
+# ---------------------------------------------------------
+# Connect and execute COUNT(*)
+# ---------------------------------------------------------
+
+try:
+    print("\nConnecting to Databricks SQL...")
+
+    with sql.connect(
+        server_hostname=server_hostname,
+        http_path=http_path,
+        credentials_provider=credential_provider,
+    ) as connection:
+
+        print("Authentication / SQL connection: OK")
+
+        query = f"SELECT COUNT(*) FROM {safe_table_name}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+        count = result[0]
+
+        print(f"\nTable: {table_name}")
+        print(f"Record count: {count:,}")
+
+except Exception as exc:
+    print("\nFAILED")
+    print(f"{type(exc).__name__}: {exc}")
