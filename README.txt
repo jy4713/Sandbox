@@ -103,6 +103,21 @@ except Exception as e:
 PY
 
 
+python3 - <<'PY'
+import urllib.request
+import time
+
+url = "https://dev.azure.com/"
+print("Connecting to:", url)
+t = time.time()
+
+try:
+    r = urllib.request.urlopen(url, timeout=15)
+    print("OK:", r.status, "elapsed:", round(time.time()-t, 2), "sec")
+except Exception as e:
+    print("FAILED:", repr(e), "elapsed:", round(time.time()-t, 2), "sec")
+PY
+
 
 git -c credential.helper= ls-remote \
 'https://dev.azure.com/DraxTechnology/Generative%20AI%20Programme/_git/Drax.PoC.CodeAssistance'
