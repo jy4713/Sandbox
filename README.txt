@@ -204,8 +204,5 @@ aws ssm put-parameter \
 
 
 
-Databricks Service Principal 
  
-s : dosebc6af0c69146c3dda95f16ca3359e0b4
-cid : 5f01168a-f452-4da2-b2a3-3256f2e576a3
  
