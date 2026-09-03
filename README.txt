@@ -101,3 +101,8 @@ try:
 except Exception as e:
     print("FAILED:", repr(e))
 PY
+
+
+
+git -c credential.helper= ls-remote \
+'https://dev.azure.com/DraxTechnology/Generative%20AI%20Programme/_git/Drax.PoC.CodeAssistance'
