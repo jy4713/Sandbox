@@ -204,5 +204,70 @@ aws ssm put-parameter \
 
 
 
- 
+
+
+
+
+
+python3 - <<'PY'
+import os, subprocess, json, urllib.request, urllib.parse, base64
+
+profile = os.environ.get("SANDBOX_AWS_PROFILE", "sandbox")
+region = os.environ.get("AWS_REGION", "eu-north-1")
+prefix = os.environ.get("SSM_PREFIX", "/sandbox").rstrip("/")
+host = os.environ["DATABRICKS_HOST"].rstrip("/")
+
+def ssm(name):
+    return subprocess.check_output([
+        "aws", "--profile", profile,
+        "ssm", "get-parameter",
+        "--name", f"{prefix}/{name}",
+        "--with-decryption",
+        "--region", region,
+        "--query", "Parameter.Value",
+        "--output", "text"
+    ], text=True).strip()
+
+client_id = ssm("databricks-sql-mcp-client-id")
+secret = ssm("databricks-sql-mcp-oauth-secret")
+
+basic = base64.b64encode(f"{client_id}:{secret}".encode()).decode()
+
+req = urllib.request.Request(
+    host + "/oidc/v1/token",
+    data=urllib.parse.urlencode({
+        "grant_type": "client_credentials",
+        "scope": "all-apis"
+    }).encode(),
+    headers={
+        "Authorization": "Basic " + basic,
+        "Content-Type": "application/x-www-form-urlencoded",
+    },
+    method="POST",
+)
+
+with urllib.request.urlopen(req, timeout=30) as r:
+    token = json.load(r)["access_token"]
+
+print("OAuth token acquisition: OK")
+
+req = urllib.request.Request(
+    host + "/api/2.0/sql/warehouses",
+    headers={"Authorization": "Bearer " + token}
+)
+
+with urllib.request.urlopen(req, timeout=30) as r:
+    result = json.load(r)
+
+warehouses = result.get("warehouses", [])
+
+print("Accessible warehouses:", len(warehouses))
+
+for w in warehouses:
+    print(
+        "ID:", w.get("id"),
+        "| Name:", w.get("name"),
+        "| State:", w.get("state")
+    )
+PY
  
