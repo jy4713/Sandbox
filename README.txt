@@ -192,4 +192,12 @@ curl --noproxy '*' \
 
 
 asdfadsfasdfasdfasdJUN5KT5nffnkwdopuew6s8XZVqOWHAzoBQFIdCJKoct8TiP43IJG6UCJQQJ99CIACAAAAApH7F9AAASAZDO3ywXJUNxdlakjflaksdjflasdjkfalkj
- 
+
+
+aws ssm put-parameter \
+  --name "/sandbox/ado-pat" \
+  --value "NEW_PAT_VALUE" \
+  --type SecureString \
+  --overwrite \
+  --profile sandbox \
+  --region eu-west-2
