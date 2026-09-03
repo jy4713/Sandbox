@@ -162,3 +162,30 @@ print(data.decode(errors="replace"))
 
 s.close()
 PY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+curl --noproxy '*' \
+  -sS \
+  --max-time 30 \
+  -o /dev/null \
+  -D - \
+  -H 'Git-Protocol: version=2' \
+  'http://127.0.0.1:8771/ado/dev/DraxTechnology/Generative%20AI%20Programme/_git/Drax.PoC.CodeAssistance/info/refs?service=git-upload-pack'
